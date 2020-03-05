@@ -129,10 +129,10 @@ int read_adc(int adc_parameter){
 void read_data(void) {
   // 5V = ADC value 1024 => 1 ADC value = (5/1024)Volt= 0.0048828Volt
   // Vout=Vin*R2/(R1+R2) => Vin = Vout*(R1+R2)/R2   R1=100 and R2=20
-  solar_volt = read_adc(SOL_ADC)*0.0051025855*(120/20);
-  bat_volt   = read_adc(BAT_ADC)*0.0051025855*(120/20);       
-  load_current = (read_adc(CURRENT_ADC)*0.0051025855 -25); 
-  temperature = read_adc(TEMP_ADC)*0.0051025855*100;
+  solar_volt = read_adc(SOL_ADC)*0.0048828*(120/20);
+  bat_volt   = read_adc(BAT_ADC)*0.0048828*(120/20);       
+  load_current = (read_adc(CURRENT_ADC)*0.0048828 -25); 
+  temperature = read_adc(TEMP_ADC)*0.0048828*100;
 }
   
 void power(void){
