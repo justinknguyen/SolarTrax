@@ -15,8 +15,8 @@ volatile byte state = LOW;
 void setup() {
   // put your setup code here, to run once:
   pinMode(4, OUTPUT);
-  //pinMode(INTERRUPTPIN, INPUT_PULLUP);
-  //attachInterrupt(digitalPinToInterrupt(INTERRUPTPIN), flash, CHANGE);
+  pinMode(INTERRUPTPIN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(INTERRUPTPIN), flash, CHANGE);
   Serial.begin(9600);
   
 }
@@ -34,11 +34,17 @@ void loop() {
 
 void goSleep(){
   sleep_enable();
-  set_sleep_mode(010);
+  set_sleep_mode(011);
+  //sleep_mode();
+  delay(1000);
+  Serial.print("1");
   sleep_cpu();
+  Serial.print("2");
+  //sleep_disable();
 }
 
 void flash(){
   state = !state;
   Serial.print("interrupt");
+  //sleep_disable();
 }
