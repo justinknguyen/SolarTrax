@@ -4,7 +4,7 @@
 #define SOL_ADC A0     // Solar panel side voltage divider is connected to pin A0 
 #define BAT_ADC A1    // Battery side voltage divider is connected to pin A1
 #define CURRENT_ADC A2  // ACS 712 current sensor is connected to pin A2
-#define TEMP_ADC A3   // LM 35 Temperature is connected to pin A3
+#define TEMP_ADC A5   // LM 35 Temperature is connected to pin A3
 #define AVG_NUM 150    // number of iterations of the adc routine to average the adc readings
 #define BAT_MIN 10.5  // minimum battery voltage for 12V system
 #define BAT_MAX 15.0  // maximum battery voltage for 12V system
@@ -52,11 +52,18 @@ byte not_charge[8]=
     0b00000,0b10001,0b01010,0b00100,0b01010,0b10001,0b00000,0b00000,
 };
 
+
 float solar_volt=0;
 float bat_volt=0;
 float load_current=0;
+
 int temperature=0;
 int temp_change=0;
+int Vo;
+float R1 = 7100;
+float logR2, R2, T, Tc, Tf;
+float c1 = 1.009249522e-03, c2 = 2.378405444e-04, c3 = 2.019202697e-07;
+
 float system_volt=0;
 float bulk_charge_sp=0;
 float float_charge_sp=0;
@@ -86,6 +93,7 @@ void setup()
 //  pinMode(BAT_BLUE_LED,OUTPUT);
 //  pinMode(LOAD_RED_LED ,OUTPUT);
 //  pinMode(LOAD_GREEN_LED,OUTPUT);
+
   pinMode(PWM_PIN,OUTPUT);
   pinMode(LOAD_PIN,OUTPUT);
   digitalWrite(PWM_PIN,LOW);  // default value of pwm duty cycle
@@ -100,6 +108,13 @@ void loop(){
   lcd.setCursor(16,1); // set the cursor outside the display count
   lcd.print(" ");      // print empty character
 
+  Vo = analogRead(TEMP_ADC);
+  R2 = R1 * (1023.0 / (float)Vo - 1.0);
+  logR2 = log(R2);
+  T = (1.0 / (c1 + c2*logR2 + c3*logR2*logR2*logR2));
+  Tc = T - 277.15;
+  Tf = (Tc * 9.0)/ 5.0 + 32.0; 
+  
   read_data();             // read different sensors data from analog pin of arduino
   system_voltage();        // detect the system voltage according to battery voltage
   setpoint();      // decide the charge set point according to system voltage
@@ -132,7 +147,7 @@ void read_data(void) {
   solar_volt = read_adc(SOL_ADC)*0.0048828*(120/20);
   bat_volt   = read_adc(BAT_ADC)*0.0048828*(120/20);       
   load_current = (read_adc(CURRENT_ADC)*0.0048828 -25); 
-  temperature = read_adc(TEMP_ADC)*0.0048828*100;
+  temperature = Tc;
 }
   
 void power(void){
@@ -200,12 +215,12 @@ void system_voltage(void){
         system_volt = 12;
     }
     else if ((bat_volt > BAT_MIN/2 ) && (bat_volt < BAT_MAX/2)){
-        system_volt=6;
+        system_volt = 6;
     }
 }
  
 void setpoint(void){
-  temp_change = temperature-25.0; // 25deg cel is taken as standard room temperature 
+  temp_change = temperature-22.0; // 22deg cel is taken as standard room temperature 
   // temperature compensation = -5mv/degC/Cell 
   // If temperature is above the room temp ;Charge set point should reduced
   // If temperature is bellow the room temp ;Charge set point should increased
@@ -234,10 +249,10 @@ void charge_cycle(void){
       duty= 252.45;
       analogWrite(PWM_PIN,duty); // 99 % duty cycle // rapid charging 
     }
-    else if (bat_volt >float_charge_sp && bat_volt <= bulk_charge_sp){   
+    else if (bat_volt > float_charge_sp && bat_volt <= bulk_charge_sp){   
       charge_status = 2; // indicate the charger is in FLOAT mode
       error  = (bulk_charge_sp - bat_volt);      // duty cycle reduced when the battery voltage approaches the charge set point
-      Ep= error *100 ; //Ep= error* Kp // Assume  Kp=100
+      Ep = error *100 ; //Ep= error* Kp // Assume  Kp=100
       
       if(Ep < 0) 
       { 
@@ -317,6 +332,8 @@ void lcd_display(){
   lcd.print(" BAT:");
   lcd.print(bat_volt);
   lcd.setCursor(1,1); // set the cursor at 1st col and 2nd row
+
+  delay(500);
   
   if (charge_status == 0)
  {
