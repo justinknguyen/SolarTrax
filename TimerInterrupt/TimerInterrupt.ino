@@ -2,6 +2,10 @@
 #include <avr/sleep.h>
 #include <avr/power.h>
 #include <avr/wdt.h>
+#include <Servo.h>
+ #define SERVO_PIN 6
+ #define ANALOG_SERVO_PIN A3
+ Servo myServo;
 #define LED_PIN 3
 #define MINUTES 1               // change this to your desired period
 #define TIMER ((MINUTES*60)/8)

@@ -1,50 +1,50 @@
-#include <Servo.h>
-#include <avr/sleep.h>
-
-#define SAMPLINGTIME 5000
-#define INTERRUPTPIN 3
-//900000 - 15 minutes
-//
-
-volatile byte state = LOW;
+ #include <Servo.h>
+ #define SERVO_PIN 6
+ #define ANALOG_SERVO_PIN A3
+ #define NUM_SAMP 300
+ Servo myServo;
+ int samples = 0;
+ long int sum = 0;
 
 /**
  * @author Branden Wong
  *         Savipal Jessel
  */
 void setup() {
-  // put your setup code here, to run once:
-  pinMode(4, OUTPUT);
-  pinMode(INTERRUPTPIN, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(INTERRUPTPIN), flash, CHANGE);
+  myServo.attach(SERVO_PIN,0,360);
+  myServo.write(60);
+  pinMode(3,INPUT);
   Serial.begin(9600);
-  
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  digitalWrite(4, HIGH);
-  delay(1000);
-  goSleep();
-  digitalWrite(4, LOW);
-  delay(1000);
+
+  myServo.write(70);
+  //delay(1000);
+  //myServo.write(60);
+  //delay(2000);
+  
+ 
+  
+    //Serial.println(pulseIn(3, HIGH));
+
+if (samples == NUM_SAMP){
+  sum = sum/NUM_SAMP;
+  Serial.println(sum);
+  sum = 0;
+  samples = 0;
+}
+
+else{
+
+  sum += pulseIn(3, HIGH);
+  samples++;
+}
+
+    
   
 
-}
+ 
+ 
 
-void goSleep(){
-  sleep_enable();
-  set_sleep_mode(011);
-  //sleep_mode();
-  delay(1000);
-  Serial.print("1");
-  sleep_cpu();
-  Serial.print("2");
-  //sleep_disable();
-}
-
-void flash(){
-  state = !state;
-  Serial.print("interrupt");
-  //sleep_disable();
 }
