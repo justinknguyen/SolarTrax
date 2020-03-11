@@ -1,10 +1,11 @@
  #include <Servo.h>
  #define SERVO_PIN 6
- #define ANALOG_SERVO_PIN A3
+ #define ANALOG_PIN A0
  #define NUM_SAMP 300
  Servo myServo;
  int samples = 0;
  long int sum = 0;
+ boolean flag = true;
 
 /**
  * @author Branden Wong
@@ -19,7 +20,17 @@ void setup() {
 
 void loop() {
 
-  myServo.write(70);
+if (digitalRead(2) == HIGH){
+  myServo.write(180);
+}
+
+else{
+  myServo.write(60);
+}
+
+
+    
+ 
   //delay(1000);
   //myServo.write(60);
   //delay(2000);
@@ -41,7 +52,8 @@ else{
   samples++;
 }
 
-    
+
+
   
 
  
